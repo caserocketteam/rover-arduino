@@ -4,20 +4,6 @@ const int distance = 100;  //distance to the ground in cm
 long cm;  //the distance from the sensor in cm
 int state = 0;  //what state the rover is in; 0=prelaunch, 1=flight, 2=recovery, 3=landed, 4=forward, 5=turn, 6=stop
 
-long ping1(int pin) {
-  pinMode(pin, OUTPUT);
-  digitalWrite(pin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(pin, HIGH);
-  delayMicroseconds(5);
-  digitalWrite(pin, LOW);
-  
-  pinMode(pin, INPUT);
-  duration = pulseIn(pin, HIGH);
-  cm = microsecondsToCentimeters(duration);
-  return cm;
-}
-
 void setup() {
   Serial.begin(9600);
 }
@@ -30,8 +16,8 @@ void loop() {
     // TODO: check for apogee
   } else if(state == 2) {    //check distance from the ground for parachute release
     //send the pings from each sensor
-    d1 = (int)ping(us_1);
-    d2 = (int)ping(us_2);
+    int d1 = (int)ping(us_1);
+    int d2 = (int)ping(us_2);
     if(d1 < distance || d2 < distance){
       // TODO: code for releasing the parachute
       state = 3;
@@ -47,4 +33,22 @@ void loop() {
     delay(100);
   }
   
+}
+
+long ping(int pin) {
+  pinMode(pin, OUTPUT);
+  digitalWrite(pin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(pin, HIGH);
+  delayMicroseconds(5);
+  digitalWrite(pin, LOW);
+  
+  pinMode(pin, INPUT);
+  long duration = pulseIn(pin, HIGH);
+  cm = microsecondsToCentimeters(duration);
+  return cm;
+}
+
+long microsecondsToCentimeters(long microseconds){
+  return microseconds / 29 / 2;
 }
