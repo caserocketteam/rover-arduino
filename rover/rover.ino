@@ -1,3 +1,10 @@
+#include <Wire.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_LSM303_U.h>
+#include <Adafruit_BMP085_U.h>
+#include <Adafruit_L3GD20_U.h>
+#include <Adafruit_10DOF.h>
+
 const int us_1 = 7;  //ultrasonic sensor 1
 const int us_2 = 8;  //ultrasonic sensor 2
 const int motor_left1 = 3;
