@@ -4,6 +4,14 @@
 #include <Adafruit_BMP085_U.h>
 #include <Adafruit_L3GD20_U.h>
 #include <Adafruit_10DOF.h>
+#include <SoftwareSerial.h>
+#include <Adafruit_GPS.h>
+
+/* Assign a unique ID to the sensors */
+Adafruit_10DOF                dof   = Adafruit_10DOF();
+Adafruit_LSM303_Accel_Unified accel = Adafruit_LSM303_Accel_Unified(30301);
+Adafruit_LSM303_Mag_Unified   mag   = Adafruit_LSM303_Mag_Unified(30302);
+Adafruit_BMP085_Unified       bmp   = Adafruit_BMP085_Unified(18001);
 
 const int us_1 = 7;  //ultrasonic sensor 1
 const int us_2 = 8;  //ultrasonic sensor 2
@@ -26,11 +34,19 @@ void setup() {
 }
 
 void loop() { 
+  sensors_event_t event;
+  
   if(state == 0){
-    // TODO: look for launch (spike on acceleration)
+    accel.getEvent(&event);
+    if(event.acceleration.x > 2){
+      state = 1;
+    }
     delay(100);
   } else if(state == 1) {
-    // TODO: check for apogee
+    accel.getEvent(&event);
+    if(event.acceleration.x < 0.5 && event.acceleration.x > -0.5){  //TODO: make sure that these are the right values for apogee
+      
+    }
   } else if(state == 2) {    //check distance from the ground for parachute release
     // TODO add code to release the drouge
     //send the pings from each sensor
@@ -41,7 +57,7 @@ void loop() {
       state = 3;
     }
   } else if(state == 3) {  // wait a few seconds to make sure that were on the ground
-    delay(5000000);  // wait 5 seconds
+    delay(5000);  // wait 5 seconds
     state = 4;
   } else if(state == 4) {  // Drive the specified distance forward
     drive();
@@ -65,7 +81,7 @@ void loop() {
       state = 4;
     }
   } else {  //the program is complete, stop the rover
-    delay(100);
+    delay(1000);
   }
   
 }
