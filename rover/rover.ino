@@ -1,4 +1,4 @@
-#include <Wire.h>
+ #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_LSM303_U.h>
 #include <Adafruit_BMP085_U.h>
@@ -14,12 +14,14 @@ Adafruit_LSM303_Mag_Unified   mag   = Adafruit_LSM303_Mag_Unified(30302);
 Adafruit_BMP085_Unified       bmp   = Adafruit_BMP085_Unified(18001);
 
 const int us_1 = 7;  //ultrasonic sensor 1
-const int us_2 = 8;  //ultrasonic sensor 2
+const int chute = 8;  //pin for opening the main chute
+const int detatch = 9;  //pin for releasing the chute
 const int motor_left1 = 3;
 const int motor_left2 = 5;
 const int motor_right1 = 6;
 const int motor_right2 = 9;
 const int distance = 15;  //distance to the ground in cm
+const int flight_delay = 1000;
 bool complete = false;
 long cm;  //the distance from the sensor in cm
 int state = 0;  //what state the rover is in; 0=prelaunch, 1=flight, 2=recovery, 3=landed, 4=forward, 5=turn, 6=stop
@@ -30,10 +32,16 @@ void setup() {
   pinMode(motor_left2, OUTPUT);
   pinMode(motor_right1, OUTPUT);
   pinMode(motor_right2, OUTPUT);
+  pinMode(chute, OUTPUT);
+  pinMode(detatch, OUTPUT);
+  
+  digitalWrite(chute, LOW);
+  digitalWrite(detatch, LOW);
+  
   Serial.begin(9600);
 }
 
-void loop() { 
+void loop() {
   sensors_event_t event;
   
   if(state == 0){
@@ -43,17 +51,13 @@ void loop() {
     }
     delay(100);
   } else if(state == 1) {
-    accel.getEvent(&event);
-    if(event.acceleration.x < 0.5 && event.acceleration.x > -0.5){  //TODO: make sure that these are the right values for apogee
-      
-    }
+    delay(flight_delay);  // Instead of looking for apogee just wait until we are sure that we are there 
   } else if(state == 2) {    //check distance from the ground for parachute release
-    // TODO add code to release the drouge
+    // TODO add code to open the main chute
     //send the pings from each sensor
     int d1 = (int)ping(us_1);
-    int d2 = (int)ping(us_2);
-    if(d1 < distance || d2 < distance){
-      // TODO: code for releasing the parachute
+    if(d1 < distance){
+      digitalWrite(detatch, HIGH);
       state = 3;
     }
   } else if(state == 3) {  // wait a few seconds to make sure that were on the ground
